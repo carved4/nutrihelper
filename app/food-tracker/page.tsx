@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Apple, Search, Plus, Loader2, AlertCircle, Utensils, Scale, Flame, Cookie, Beef, Droplet, type LucideIcon } from "lucide-react";
-import type { CommonFood, BrandedFood, SearchResult, SearchResponse, NutritionixResponse } from "./types";
+import { Apple, Search, Plus, Loader2, AlertCircle, Utensils, Scale, Flame, Cookie, Beef, type LucideIcon } from "lucide-react";
+import type { BrandedFood, SearchResult, SearchResponse, NutritionixResponse } from "./types";
 
 interface FoodItem {
   food_name: string;
