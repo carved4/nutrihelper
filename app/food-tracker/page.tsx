@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Apple, Search, Plus, Loader2, AlertCircle, Utensils, Scale, Flame, Cookie, Beef, Droplet } from "lucide-react";
+import { Apple, Search, Plus, Loader2, AlertCircle, Utensils, Scale, Flame, Cookie, Beef, Droplet, type LucideIcon } from "lucide-react";
+import type { CommonFood, BrandedFood, SearchResult } from "./types";
 
 interface FoodItem {
   food_name: string;
@@ -41,7 +42,7 @@ export default function FoodTracker() {
       
       // Get detailed nutrition info for each common food
       const commonFoods = await Promise.all(
-        searchData.common.slice(0, 5).map(async (item: any) => {
+        searchData.common.slice(0, 5).map(async (item: SearchResult) => {
           const detailResponse = await fetch(
             "https://trackapi.nutritionix.com/v2/natural/nutrients",
             {
@@ -62,7 +63,7 @@ export default function FoodTracker() {
       );
 
       // Get branded foods info
-      const brandedFoods = searchData.branded.slice(0, 5).map((item: any) => ({
+      const brandedFoods = searchData.branded.slice(0, 5).map((item: BrandedFood) => ({
         food_name: item.food_name,
         serving_qty: item.serving_qty,
         serving_unit: item.serving_unit,
@@ -185,7 +186,7 @@ export default function FoodTracker() {
                           {Math.round(food.nf_total_carbohydrate)}g carbs
                         </span>
                         <span className="flex items-center gap-1">
-                          <Droplet className="h-4 w-4 text-purple-500" />
+                          <Scale className="h-4 w-4 text-purple-500" />
                           {Math.round(food.nf_total_fat)}g fat
                         </span>
                       </div>
@@ -213,7 +214,7 @@ export default function FoodTracker() {
                 color="text-orange-500"
               />
               <MacroCard
-                icon={Utensils}
+                icon={Beef}
                 label="Protein"
                 value={Math.round(getTotalNutrients().protein)}
                 unit="g"
@@ -237,7 +238,7 @@ export default function FoodTracker() {
 
             <div className="rounded-lg border bg-card shadow-sm">
               <div className="p-4 border-b">
-                <h2 className="font-semibold">Today's Food Log</h2>
+                <h2 className="font-semibold">Today&apos;s Food Log</h2>
               </div>
               <div className="divide-y">
                 {trackedFoods.map((food, index) => (
@@ -283,7 +284,7 @@ function MacroCard({
   unit,
   color,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: number;
   unit: string;

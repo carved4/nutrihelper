@@ -47,7 +47,7 @@ export default function BMICalculator() {
             BMI Calculator
           </h1>
           <p className="text-muted-foreground">
-            Calculate your Body Mass Index (BMI) to assess if you're at a healthy weight
+            Calculate your Body Mass Index (BMI) to assess if you&apos;re at a healthy weight
           </p>
         </div>
 
@@ -118,7 +118,7 @@ export default function BMICalculator() {
                       <div>
                         <p className="font-medium">What does this mean?</p>
                         <p className="text-sm text-muted-foreground">
-                          BMI is a measure of body fat based on height and weight. However, it's not a
+                          BMI is a measure of body fat based on height and weight. However, it&apos;s not a
                           diagnostic tool and should be used as a general guideline.
                         </p>
                       </div>
