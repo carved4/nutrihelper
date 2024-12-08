@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Apple, Search, Plus, Loader2, AlertCircle, Utensils, Scale, Flame, Cookie, Beef, Droplet, type LucideIcon } from "lucide-react";
-import type { CommonFood, BrandedFood, SearchResult } from "./types";
+import type { CommonFood, BrandedFood, SearchResult, SearchResponse, NutritionixResponse } from "./types";
 
 interface FoodItem {
   food_name: string;
@@ -38,7 +38,7 @@ export default function FoodTracker() {
         }
       );
       
-      const searchData = await searchResponse.json();
+      const searchData = (await searchResponse.json()) as SearchResponse;
       
       // Get detailed nutrition info for each common food
       const commonFoods = await Promise.all(
@@ -57,7 +57,7 @@ export default function FoodTracker() {
               }),
             }
           );
-          const detailData = await detailResponse.json();
+          const detailData = (await detailResponse.json()) as NutritionixResponse;
           return detailData.foods?.[0];
         })
       );

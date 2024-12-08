@@ -16,10 +16,20 @@ interface BrandedFood {
   nf_protein: number;
   nf_total_carbohydrate: number;
   nf_total_fat: number;
+  brand_name: string;
 }
 
 interface SearchResult {
   food_name: string;
 }
 
-export type { CommonFood, BrandedFood, SearchResult }; 
+interface SearchResponse {
+  common: SearchResult[];
+  branded: BrandedFood[];
+}
+
+interface NutritionixResponse {
+  foods: CommonFood[];
+}
+
+export type { CommonFood, BrandedFood, SearchResult, SearchResponse, NutritionixResponse }; 
