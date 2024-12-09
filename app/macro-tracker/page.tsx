@@ -1,72 +1,75 @@
 "use client";
 
-import { useState } from "react";
-import { PieChart, Activity, Scale, User2, Dumbbell, AlertCircle } from "lucide-react";
-
-interface MacroGoals {
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-}
+import { useState, useEffect } from "react";
+import { PieChart, Activity, Scale, User2, Dumbbell, AlertCircle, RotateCcw } from "lucide-react";
+import { useMacroStore } from "../store/macroStore";
 
 export default function MacroTracker() {
-  const [weight, setWeight] = useState("");
-  const [height, setHeight] = useState("");
-  const [age, setAge] = useState("");
-  const [gender, setGender] = useState<"male" | "female">("male");
-  const [activityLevel, setActivityLevel] = useState<number>(1.2);
-  const [macroGoals, setMacroGoals] = useState<MacroGoals | null>(null);
+  const { calculatorData, calculateMacros, clearMacros, updateCalculatorData } = useMacroStore();
+  
+  const [weight, setWeight] = useState(calculatorData.weight);
+  const [feet, setFeet] = useState(calculatorData.feet);
+  const [inches, setInches] = useState(calculatorData.inches);
+  const [age, setAge] = useState(calculatorData.age);
+  const [gender, setGender] = useState<"male" | "female">(calculatorData.gender);
+  const [activityLevel, setActivityLevel] = useState<number>(calculatorData.activityLevel);
 
-  const calculateMacros = (e: React.FormEvent) => {
+  const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const heightInCm = parseFloat(height);
-    const weightInKg = parseFloat(weight);
-    const ageInYears = parseFloat(age);
-    
-    let bmr;
-    if (gender === "male") {
-      bmr = 10 * weightInKg + 6.25 * heightInCm - 5 * ageInYears + 5;
-    } else {
-      bmr = 10 * weightInKg + 6.25 * heightInCm - 5 * ageInYears - 161;
-    }
+    calculateMacros({
+      weight,
+      feet,
+      inches,
+      age,
+      gender,
+      activityLevel
+    });
+  };
 
-    const tdee = bmr * activityLevel;
-
-    const goals: MacroGoals = {
-      calories: Math.round(tdee),
-      protein: Math.round((tdee * 0.3) / 4),
-      carbs: Math.round((tdee * 0.4) / 4),
-      fat: Math.round((tdee * 0.3) / 9),
-    };
-
-    setMacroGoals(goals);
+  const handleClear = () => {
+    clearMacros();
+    setWeight("");
+    setFeet("");
+    setInches("");
+    setAge("");
+    setGender("male");
+    setActivityLevel(1.2);
   };
 
   return (
     <div className="container max-w-6xl py-8 px-4 md:px-6">
       <div className="flex flex-col gap-8">
         {/* Header Section */}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <PieChart className="h-8 w-8 text-primary" />
-            Macro Calculator
-          </h1>
-          <p className="text-muted-foreground">
-            Calculate your recommended daily macronutrient intake based on your goals
-          </p>
+        <div className="flex justify-between items-start">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <PieChart className="h-8 w-8 text-primary" />
+              Macro Calculator
+            </h1>
+            <p className="text-muted-foreground">
+              Calculate your recommended daily macronutrient intake based on your goals
+            </p>
+          </div>
+          {calculatorData.macroGoals && (
+            <button
+              onClick={handleClear}
+              className="p-2 hover:bg-accent rounded-full text-muted-foreground"
+              aria-label="Clear results"
+            >
+              <RotateCcw className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Calculator Form */}
           <div className="order-2 lg:order-1">
-            <form onSubmit={calculateMacros} className="space-y-6">
+            <form onSubmit={handleCalculate} className="space-y-6">
               <div className="rounded-lg border bg-card p-6 space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="weight" className="text-sm font-medium flex items-center gap-2">
                     <Scale className="h-4 w-4" />
-                    Weight (kg)
+                    Weight (lbs)
                   </label>
                   <input
                     id="weight"
@@ -74,25 +77,49 @@ export default function MacroTracker() {
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
                     className="w-full p-3 border rounded-lg bg-background transition-colors hover:border-primary"
-                    placeholder="Enter weight in kilograms"
+                    placeholder="Enter weight in pounds"
                     required
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="height" className="text-sm font-medium flex items-center gap-2">
+                <div>
+                  <label className="text-sm font-medium flex items-center gap-2 mb-2">
                     <Activity className="h-4 w-4" />
-                    Height (cm)
+                    Height
                   </label>
-                  <input
-                    id="height"
-                    type="number"
-                    value={height}
-                    onChange={(e) => setHeight(e.target.value)}
-                    className="w-full p-3 border rounded-lg bg-background transition-colors hover:border-primary"
-                    placeholder="Enter height in centimeters"
-                    required
-                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <input
+                        id="feet"
+                        type="number"
+                        value={feet}
+                        onChange={(e) => setFeet(e.target.value)}
+                        className="w-full p-3 border rounded-lg bg-background transition-colors hover:border-primary"
+                        placeholder="Feet"
+                        required
+                        min="0"
+                      />
+                      <label htmlFor="feet" className="text-xs text-muted-foreground">
+                        Feet
+                      </label>
+                    </div>
+                    <div className="space-y-2">
+                      <input
+                        id="inches"
+                        type="number"
+                        value={inches}
+                        onChange={(e) => setInches(e.target.value)}
+                        className="w-full p-3 border rounded-lg bg-background transition-colors hover:border-primary"
+                        placeholder="Inches"
+                        required
+                        min="0"
+                        max="11"
+                      />
+                      <label htmlFor="inches" className="text-xs text-muted-foreground">
+                        Inches
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -112,31 +139,19 @@ export default function MacroTracker() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Gender</label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <label className="flex items-center justify-center p-3 border rounded-lg cursor-pointer hover:border-primary transition-colors">
-                      <input
-                        type="radio"
-                        name="gender"
-                        value="male"
-                        checked={gender === "male"}
-                        onChange={(e) => setGender(e.target.value as "male" | "female")}
-                        className="sr-only"
-                      />
-                      <span className={gender === "male" ? "text-primary font-medium" : ""}>Male</span>
-                    </label>
-                    <label className="flex items-center justify-center p-3 border rounded-lg cursor-pointer hover:border-primary transition-colors">
-                      <input
-                        type="radio"
-                        name="gender"
-                        value="female"
-                        checked={gender === "female"}
-                        onChange={(e) => setGender(e.target.value as "male" | "female")}
-                        className="sr-only"
-                      />
-                      <span className={gender === "female" ? "text-primary font-medium" : ""}>Female</span>
-                    </label>
-                  </div>
+                  <label htmlFor="gender" className="text-sm font-medium flex items-center gap-2">
+                    <User2 className="h-4 w-4" />
+                    Gender
+                  </label>
+                  <select
+                    id="gender"
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value as "male" | "female")}
+                    className="w-full p-3 border rounded-lg bg-background transition-colors hover:border-primary"
+                  >
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
                 </div>
 
                 <div className="space-y-2">
@@ -169,14 +184,14 @@ export default function MacroTracker() {
 
           {/* Results Section */}
           <div className="order-1 lg:order-2">
-            {macroGoals ? (
+            {calculatorData.macroGoals ? (
               <div className="rounded-lg border bg-card p-6 space-y-6">
                 <h2 className="text-2xl font-semibold">Your Daily Targets</h2>
                 
                 <div className="grid gap-4">
                   <MacroCard
                     label="Daily Calories"
-                    value={macroGoals.calories}
+                    value={calculatorData.macroGoals.calories}
                     unit="kcal"
                     color="bg-orange-500/10"
                     textColor="text-orange-500"
@@ -184,7 +199,7 @@ export default function MacroTracker() {
                   <div className="grid grid-cols-3 gap-4">
                     <MacroCard
                       label="Protein"
-                      value={macroGoals.protein}
+                      value={calculatorData.macroGoals.protein}
                       unit="g"
                       color="bg-blue-500/10"
                       textColor="text-blue-500"
@@ -192,7 +207,7 @@ export default function MacroTracker() {
                     />
                     <MacroCard
                       label="Carbs"
-                      value={macroGoals.carbs}
+                      value={calculatorData.macroGoals.carbs}
                       unit="g"
                       color="bg-green-500/10"
                       textColor="text-green-500"
@@ -200,7 +215,7 @@ export default function MacroTracker() {
                     />
                     <MacroCard
                       label="Fat"
-                      value={macroGoals.fat}
+                      value={calculatorData.macroGoals.fat}
                       unit="g"
                       color="bg-purple-500/10"
                       textColor="text-purple-500"
@@ -218,6 +233,11 @@ export default function MacroTracker() {
                         These calculations are based on your BMR and activity level. Adjust your intake
                         based on your specific goals and progress.
                       </p>
+                      {calculatorData.macroGoals.lastCalculated && (
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Last calculated: {new Date(calculatorData.macroGoals.lastCalculated).toLocaleString()}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -238,6 +258,7 @@ export default function MacroTracker() {
   );
 }
 
+// Macro Card Component
 function MacroCard({
   label,
   value,
@@ -249,20 +270,22 @@ function MacroCard({
   label: string;
   value: number;
   unit: string;
-  color: string;
-  textColor: string;
+  color?: string;
+  textColor?: string;
   percent?: number;
 }) {
   return (
     <div className={`rounded-lg ${color} p-4`}>
-      <p className="text-sm font-medium mb-1">{label}</p>
-      <p className={`text-2xl font-bold ${textColor}`}>
+      <div className="flex items-center justify-between">
+        <p className={`text-sm ${textColor}`}>{label}</p>
+        {percent && (
+          <p className="text-xs text-muted-foreground">{percent}%</p>
+        )}
+      </div>
+      <p className={`mt-2 text-2xl font-bold ${textColor}`}>
         {value}
         <span className="text-sm font-normal text-muted-foreground ml-1">{unit}</span>
       </p>
-      {percent && (
-        <p className="text-xs text-muted-foreground mt-1">{percent}% of total calories</p>
-      )}
     </div>
   );
 } 
