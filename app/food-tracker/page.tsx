@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Apple, Search, Plus, Loader2, AlertCircle, Utensils, Scale, Flame, Cookie, Beef, Trash2, Coffee, Sun, Moon, Heart, Settings, type LucideIcon } from "lucide-react";
 import type { BrandedFood, SearchResult, SearchResponse, NutritionixResponse } from "./types";
 import { useFoodStore } from "../store/foodStore";
 import type { NutritionGoals } from "../store/foodStore";
+import { useMacroStore } from "../store/macroStore";
 
 interface FoodItem {
   food_name: string;
@@ -38,6 +39,20 @@ export default function FoodTracker() {
     removeFromFavorites,
     updateNutritionGoals
   } = useFoodStore();
+
+  const { calculatorData } = useMacroStore();
+
+  // Update nutrition goals when macro goals change
+  useEffect(() => {
+    if (calculatorData.macroGoals) {
+      updateNutritionGoals({
+        calories: calculatorData.macroGoals.calories,
+        protein: calculatorData.macroGoals.protein,
+        carbs: calculatorData.macroGoals.carbs,
+        fat: calculatorData.macroGoals.fat
+      });
+    }
+  }, [calculatorData.macroGoals, updateNutritionGoals]);
 
   const addToTracker = (food: FoodItem) => {
     addFoodToStore(food, selectedMealType);

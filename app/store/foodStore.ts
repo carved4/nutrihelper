@@ -74,7 +74,7 @@ export const useFoodStore = create<FoodStore>()(
         nutritionGoals: { 
           ...state.nutritionGoals, 
           ...goals,
-          isFromCalculator: true 
+          isFromCalculator: Object.keys(goals).length > 0
         }
       })),
     }),
