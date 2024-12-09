@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Apple, Search, Plus, Loader2, AlertCircle, Utensils, Scale, Flame, Cookie, Beef, type LucideIcon } from "lucide-react";
+import { Apple, Search, Plus, Loader2, AlertCircle, Utensils, Scale, Flame, Cookie, Beef, Trash2, type LucideIcon } from "lucide-react";
 import type { BrandedFood, SearchResult, SearchResponse, NutritionixResponse } from "./types";
+import { useFoodStore } from "../store/foodStore";
 
 interface FoodItem {
   food_name: string;
@@ -18,9 +19,10 @@ interface FoodItem {
 export default function FoodTracker() {
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<FoodItem[]>([]);
-  const [trackedFoods, setTrackedFoods] = useState<FoodItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  
+  const { trackedFoods, addFood: addToTracker, removeFood, clearFoods } = useFoodStore();
 
   const searchFood = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,12 +84,6 @@ export default function FoodTracker() {
       setError("Failed to search for food. Please try again.");
     }
     setLoading(false);
-  };
-
-  const addToTracker = (food: FoodItem) => {
-    setTrackedFoods([...trackedFoods, food]);
-    setSearchResults([]); // Clear search results after adding
-    setQuery(""); // Clear search input
   };
 
   const getTotalNutrients = () => {
@@ -237,8 +233,16 @@ export default function FoodTracker() {
             </div>
 
             <div className="rounded-lg border bg-card shadow-sm">
-              <div className="p-4 border-b">
+              <div className="p-4 border-b flex justify-between items-center">
                 <h2 className="font-semibold">Today&apos;s Food Log</h2>
+                {trackedFoods.length > 0 && (
+                  <button
+                    onClick={clearFoods}
+                    className="text-sm text-red-500 hover:text-red-600 transition-colors"
+                  >
+                    Clear All
+                  </button>
+                )}
               </div>
               <div className="divide-y">
                 {trackedFoods.map((food, index) => (
@@ -250,9 +254,18 @@ export default function FoodTracker() {
                           {food.serving_qty} {food.serving_unit}
                         </p>
                       </div>
-                      <p className="text-sm font-medium">
-                        {Math.round(food.nf_calories)} cal
-                      </p>
+                      <div className="flex items-center gap-4">
+                        <p className="text-sm font-medium">
+                          {Math.round(food.nf_calories)} cal
+                        </p>
+                        <button
+                          onClick={() => removeFood(index)}
+                          className="text-muted-foreground hover:text-red-500 transition-colors"
+                          aria-label="Remove food item"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                     <div className="mt-2 flex gap-4 text-sm text-muted-foreground">
                       <span>P: {Math.round(food.nf_protein)}g</span>
