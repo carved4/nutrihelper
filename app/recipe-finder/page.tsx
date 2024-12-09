@@ -210,7 +210,7 @@ export default function RecipeFinder() {
         {/* Recipe Grid */}
         {recipes.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {recipes.map((recipe) => (
                 <div
                   key={recipe.id}
@@ -230,8 +230,8 @@ export default function RecipeFinder() {
                     )}
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-lg mb-2 line-clamp-1">{recipe.title}</h3>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <h3 className="font-semibold text-lg mb-2 line-clamp-2">{recipe.title}</h3>
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
                         <span>{recipe.readyInMinutes}m</span>
@@ -251,6 +251,11 @@ export default function RecipeFinder() {
                             {diet}
                           </span>
                         ))}
+                        {recipe.diets.length > 2 && (
+                          <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                            +{recipe.diets.length - 2} more
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -278,62 +283,62 @@ export default function RecipeFinder() {
 
         {/* Recipe Modal */}
         {selectedRecipe && (
-          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
-            <div className="fixed inset-x-4 top-[5%] bottom-[5%] md:inset-x-[10%] lg:inset-x-[20%] bg-background rounded-lg border shadow-lg overflow-y-auto">
-              <div className="relative">
-                <div className="aspect-video">
-                  <img
-                    src={selectedRecipe.image}
-                    alt={selectedRecipe.title}
-                    className="object-cover w-full h-full"
-                  />
-                  <button
-                    onClick={() => setSelectedRecipe(null)}
-                    className="absolute top-4 right-4 p-2 rounded-full bg-background/50 hover:bg-background/80 backdrop-blur-sm transition-colors"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-
-                <div className="p-6">
-                  {/* Header */}
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-bold mb-2">{selectedRecipe.title}</h2>
-                    <div className="flex flex-wrap gap-4">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-5 w-5 text-muted-foreground" />
-                        <span>{selectedRecipe.readyInMinutes} minutes</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Users className="h-5 w-5 text-muted-foreground" />
-                        <span>{selectedRecipe.servings} servings</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Flame className="h-5 w-5 text-muted-foreground" />
-                        <span>Health Score: {selectedRecipe.healthScore}%</span>
-                      </div>
-                    </div>
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 overflow-y-auto">
+            <div className="min-h-full flex items-center justify-center p-4">
+              <div className="w-full max-w-4xl bg-background rounded-lg border shadow-lg">
+                <div className="relative">
+                  <div className="aspect-video sm:aspect-[2/1]">
+                    <img
+                      src={selectedRecipe.image}
+                      alt={selectedRecipe.title}
+                      className="object-cover w-full h-full rounded-t-lg"
+                    />
+                    <button
+                      onClick={() => setSelectedRecipe(null)}
+                      className="absolute top-4 right-4 p-2 rounded-full bg-background/50 hover:bg-background/80 backdrop-blur-sm transition-colors"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
                   </div>
 
-                  {/* Tags Section */}
-                  <div className="space-y-4 mb-6">
-                    {selectedRecipe.diets?.length > 0 && (
-                      <div>
-                        <h3 className="font-medium mb-2">Dietary Info</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedRecipe.diets.map((diet) => (
-                            <span
-                              key={diet}
-                              className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary"
-                            >
-                              {diet}
-                            </span>
-                          ))}
+                  <div className="p-4 sm:p-6">
+                    {/* Header */}
+                    <div className="mb-6">
+                      <h2 className="text-xl sm:text-2xl font-bold mb-2">{selectedRecipe.title}</h2>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-5 w-5 text-muted-foreground" />
+                          <span>{selectedRecipe.readyInMinutes} minutes</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Users className="h-5 w-5 text-muted-foreground" />
+                          <span>{selectedRecipe.servings} servings</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Flame className="h-5 w-5 text-muted-foreground" />
+                          <span>Health Score: {selectedRecipe.healthScore}%</span>
                         </div>
                       </div>
-                    )}
-                    {(selectedRecipe.cuisines?.length > 0 || selectedRecipe.dishTypes?.length > 0) && (
-                      <div className="flex gap-8">
+                    </div>
+
+                    {/* Tags Section */}
+                    <div className="space-y-4 mb-6">
+                      {selectedRecipe.diets?.length > 0 && (
+                        <div>
+                          <h3 className="font-medium mb-2">Dietary Info</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedRecipe.diets.map((diet) => (
+                              <span
+                                key={diet}
+                                className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary"
+                              >
+                                {diet}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <div className="grid sm:grid-cols-2 gap-4">
                         {selectedRecipe.cuisines?.length > 0 && (
                           <div>
                             <h3 className="font-medium mb-2">Cuisine</h3>
@@ -365,39 +370,39 @@ export default function RecipeFinder() {
                           </div>
                         )}
                       </div>
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  <div className="mb-8">
-                    <h3 className="font-medium mb-2">About</h3>
-                    <div
-                      className="prose prose-sm dark:prose-invert max-w-none"
-                      dangerouslySetInnerHTML={{ __html: selectedRecipe.summary }}
-                    />
-                  </div>
-
-                  {/* Ingredients */}
-                  <div className="mb-8">
-                    <h3 className="text-xl font-semibold mb-4">Ingredients</h3>
-                    <div className="grid gap-2">
-                      {selectedRecipe.extendedIngredients?.map((ingredient) => (
-                        <div
-                          key={ingredient.id}
-                          className="flex items-center gap-2 p-2 rounded-lg hover:bg-accent"
-                        >
-                          <div className="h-2 w-2 rounded-full bg-primary" />
-                          <span>{ingredient.original}</span>
-                        </div>
-                      ))}
                     </div>
-                  </div>
 
-                  {/* Instructions */}
-                  <div>
-                    <h3 className="text-xl font-semibold mb-4">Instructions</h3>
-                    <div className="space-y-4">
-                      {renderInstructions(selectedRecipe)}
+                    {/* Description */}
+                    <div className="mb-8">
+                      <h3 className="font-medium mb-2">About</h3>
+                      <div
+                        className="prose prose-sm dark:prose-invert max-w-none"
+                        dangerouslySetInnerHTML={{ __html: selectedRecipe.summary }}
+                      />
+                    </div>
+
+                    {/* Ingredients */}
+                    <div className="mb-8">
+                      <h3 className="text-lg sm:text-xl font-semibold mb-4">Ingredients</h3>
+                      <div className="grid sm:grid-cols-2 gap-2">
+                        {selectedRecipe.extendedIngredients?.map((ingredient) => (
+                          <div
+                            key={ingredient.id}
+                            className="flex items-center gap-2 p-2 rounded-lg hover:bg-accent"
+                          >
+                            <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />
+                            <span className="text-sm">{ingredient.original}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Instructions */}
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-semibold mb-4">Instructions</h3>
+                      <div className="space-y-4">
+                        {renderInstructions(selectedRecipe)}
+                      </div>
                     </div>
                   </div>
                 </div>
