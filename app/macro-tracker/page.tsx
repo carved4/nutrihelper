@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { PieChart, Activity, Scale, User2, Dumbbell, AlertCircle, RotateCcw } from "lucide-react";
 import { useMacroStore } from "../store/macroStore";
 
 export default function MacroTracker() {
-  const { calculatorData, calculateMacros, clearMacros, updateCalculatorData } = useMacroStore();
+  const { calculatorData, calculateMacros, clearMacros } = useMacroStore();
   
   const [weight, setWeight] = useState(calculatorData.weight);
   const [feet, setFeet] = useState(calculatorData.feet);

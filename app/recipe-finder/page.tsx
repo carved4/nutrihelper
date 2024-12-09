@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import { ChefHat, Search, Clock, Users, X, Loader2, AlertCircle, Utensils, Flame } from "lucide-react";
 
 interface Recipe {
@@ -45,7 +46,7 @@ export default function RecipeFinder() {
   const [hasMore, setHasMore] = useState(true);
   const loader = useRef<HTMLDivElement>(null);
 
-  const loadRecipes = async (searchQuery: string, pageNum: number, isNewSearch: boolean = false) => {
+  const loadRecipes = useCallback(async (searchQuery: string, pageNum: number, isNewSearch: boolean = false) => {
     try {
       const response = await fetch(
         `https://api.spoonacular.com/recipes/complexSearch?apiKey=${
@@ -71,7 +72,7 @@ export default function RecipeFinder() {
       console.error("Error searching recipes:", error);
       setError("Failed to search recipes. Please try again.");
     }
-  };
+  }, []);
 
   const searchRecipes = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +85,7 @@ export default function RecipeFinder() {
 
   // Intersection Observer for infinite scrolling
   useEffect(() => {
+    const currentLoader = loader.current;
     const options = {
       root: null,
       rootMargin: "20px",
@@ -96,13 +98,13 @@ export default function RecipeFinder() {
       }
     }, options);
 
-    if (loader.current) {
-      observer.observe(loader.current);
+    if (currentLoader) {
+      observer.observe(currentLoader);
     }
 
     return () => {
-      if (loader.current) {
-        observer.unobserve(loader.current);
+      if (currentLoader) {
+        observer.unobserve(currentLoader);
       }
     };
   }, [hasMore, loading, query]);
@@ -113,7 +115,7 @@ export default function RecipeFinder() {
       setLoading(true);
       loadRecipes(query, page, false).finally(() => setLoading(false));
     }
-  }, [page]);
+  }, [page, query, loadRecipes]);
 
   const renderInstructions = (recipe: Recipe) => {
     if (recipe.instructions && typeof recipe.instructions === 'string') {
@@ -218,9 +220,11 @@ export default function RecipeFinder() {
                   onClick={() => setSelectedRecipe(recipe)}
                 >
                   <div className="aspect-video relative overflow-hidden">
-                    <img
+                    <Image
                       src={recipe.image}
                       alt={recipe.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                     />
                     {recipe.healthScore >= 80 && (
@@ -288,9 +292,11 @@ export default function RecipeFinder() {
               <div className="w-full max-w-4xl bg-background rounded-lg border shadow-lg">
                 <div className="relative">
                   <div className="aspect-video sm:aspect-[2/1]">
-                    <img
+                    <Image
                       src={selectedRecipe.image}
                       alt={selectedRecipe.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
                       className="object-cover w-full h-full rounded-t-lg"
                     />
                     <button
