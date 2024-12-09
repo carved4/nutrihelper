@@ -1,29 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { Calculator, Scale, Ruler, Info } from "lucide-react";
+import { Calculator, Scale, Ruler, Info, RotateCcw } from "lucide-react";
+import { useBMIStore } from "../store/bmiStore";
 
 export default function BMICalculator() {
-  const [height, setHeight] = useState("");
-  const [weight, setWeight] = useState("");
-  const [bmi, setBMI] = useState<number | null>(null);
-  const [category, setCategory] = useState("");
+  const { bmiData, calculateBMI, clearBMI } = useBMIStore();
+  const [feet, setFeet] = useState(bmiData.feet);
+  const [inches, setInches] = useState(bmiData.inches);
+  const [weight, setWeight] = useState(bmiData.weight);
 
-  const calculateBMI = (e: React.FormEvent) => {
+  const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault();
-    const heightInM = parseFloat(height) / 100;
-    const weightInKg = parseFloat(weight);
-    const bmiValue = weightInKg / (heightInM * heightInM);
-    setBMI(parseFloat(bmiValue.toFixed(1)));
+    calculateBMI(feet, inches, weight);
+  };
 
-    if (bmiValue < 18.5) setCategory("Underweight");
-    else if (bmiValue < 25) setCategory("Normal weight");
-    else if (bmiValue < 30) setCategory("Overweight");
-    else setCategory("Obese");
+  const handleClear = () => {
+    clearBMI();
+    setFeet("");
+    setInches("");
+    setWeight("");
   };
 
   const getCategoryColor = () => {
-    switch (category) {
+    switch (bmiData.category) {
       case "Underweight":
         return "text-blue-500";
       case "Normal weight":
@@ -41,41 +41,76 @@ export default function BMICalculator() {
     <div className="container max-w-6xl py-8 px-4 md:px-6">
       <div className="flex flex-col gap-8">
         {/* Header Section */}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Calculator className="h-8 w-8 text-primary" />
-            BMI Calculator
-          </h1>
-          <p className="text-muted-foreground">
-            Calculate your Body Mass Index (BMI) to assess if you&apos;re at a healthy weight
-          </p>
+        <div className="flex justify-between items-start">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <Calculator className="h-8 w-8 text-primary" />
+              BMI Calculator
+            </h1>
+            <p className="text-muted-foreground">
+              Calculate your Body Mass Index (BMI) to assess if you&apos;re at a healthy weight
+            </p>
+          </div>
+          {bmiData.bmi !== null && (
+            <button
+              onClick={handleClear}
+              className="p-2 hover:bg-accent rounded-full text-muted-foreground"
+              aria-label="Clear results"
+            >
+              <RotateCcw className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Calculator Form */}
           <div className="order-2 md:order-1">
-            <form onSubmit={calculateBMI} className="space-y-6">
+            <form onSubmit={handleCalculate} className="space-y-6">
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="height" className="text-sm font-medium flex items-center gap-2">
+                <div>
+                  <label className="text-sm font-medium flex items-center gap-2 mb-2">
                     <Ruler className="h-4 w-4" />
-                    Height (cm)
+                    Height
                   </label>
-                  <input
-                    id="height"
-                    type="number"
-                    value={height}
-                    onChange={(e) => setHeight(e.target.value)}
-                    className="w-full p-3 border rounded-lg bg-background transition-colors hover:border-primary"
-                    placeholder="Enter height in centimeters"
-                    required
-                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <input
+                        id="feet"
+                        type="number"
+                        value={feet}
+                        onChange={(e) => setFeet(e.target.value)}
+                        className="w-full p-3 border rounded-lg bg-background transition-colors hover:border-primary"
+                        placeholder="Feet"
+                        required
+                        min="0"
+                      />
+                      <label htmlFor="feet" className="text-xs text-muted-foreground">
+                        Feet
+                      </label>
+                    </div>
+                    <div className="space-y-2">
+                      <input
+                        id="inches"
+                        type="number"
+                        value={inches}
+                        onChange={(e) => setInches(e.target.value)}
+                        className="w-full p-3 border rounded-lg bg-background transition-colors hover:border-primary"
+                        placeholder="Inches"
+                        required
+                        min="0"
+                        max="11"
+                      />
+                      <label htmlFor="inches" className="text-xs text-muted-foreground">
+                        Inches
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <label htmlFor="weight" className="text-sm font-medium flex items-center gap-2">
                     <Scale className="h-4 w-4" />
-                    Weight (kg)
+                    Weight (lbs)
                   </label>
                   <input
                     id="weight"
@@ -83,8 +118,9 @@ export default function BMICalculator() {
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
                     className="w-full p-3 border rounded-lg bg-background transition-colors hover:border-primary"
-                    placeholder="Enter weight in kilograms"
+                    placeholder="Enter weight in pounds"
                     required
+                    min="0"
                   />
                 </div>
               </div>
@@ -100,15 +136,18 @@ export default function BMICalculator() {
 
           {/* Results Card */}
           <div className="order-1 md:order-2">
-            {bmi !== null ? (
+            {bmiData.bmi !== null ? (
               <div className="rounded-lg border bg-card p-6 shadow-sm">
                 <h2 className="text-2xl font-semibold mb-4">Your Results</h2>
                 <div className="space-y-4">
                   <div className="p-4 rounded-lg bg-primary/10 text-center">
                     <p className="text-sm text-muted-foreground mb-1">Your BMI is</p>
-                    <p className="text-4xl font-bold text-primary">{bmi}</p>
+                    <p className="text-4xl font-bold text-primary">{bmiData.bmi}</p>
                     <p className={`text-lg font-medium mt-1 ${getCategoryColor()}`}>
-                      {category}
+                      {bmiData.category}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Last updated: {new Date(bmiData.lastUpdated).toLocaleDateString()}
                     </p>
                   </div>
 
