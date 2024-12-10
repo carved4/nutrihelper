@@ -13,17 +13,6 @@ const handler = NextAuth({
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  cookies: {
-    sessionToken: {
-      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production'
-      }
-    }
-  },
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -33,56 +22,37 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          console.log("Missing credentials");
           throw new Error("Missing credentials");
         }
 
         try {
-          console.log("Finding user:", credentials.email);
           const user = await prisma.user.findUnique({
             where: { email: credentials.email },
             select: {
               id: true,
               name: true,
-              email: true
+              email: true,
+              password: true
             }
           });
 
-          if (!user) {
-            console.log("No user found");
+          if (!user || !user.password) {
             throw new Error("Invalid credentials");
           }
 
-          const [userPassword] = await prisma.$queryRaw<{ password: string }[]>`
-            SELECT password FROM "User" WHERE email = ${credentials.email}
-          `;
-
-          if (!userPassword?.password) {
-            console.log("No password found");
-            throw new Error("Invalid credentials");
-          }
-
-          console.log("Comparing passwords");
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
-            userPassword.password
+            user.password
           );
-          console.log("Password valid:", isPasswordValid);
 
           if (!isPasswordValid) {
-            console.log("Invalid password");
             throw new Error("Invalid credentials");
           }
 
-          if (!user?.email) {
-            throw new Error("Invalid credentials");
-          }
-
-          console.log("Auth successful");
           return {
             id: user.id,
-            email: user.email,
-            name: user.name
+            email: user.email || "",
+            name: user.name || null
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -96,13 +66,10 @@ const handler = NextAuth({
       if (user) {
         token.id = user.id;
         token.email = user.email;
-        token.iat = Math.floor(Date.now() / 1000);
-        token.exp = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60);
       }
       return token;
     },
     async session({ session, token }) {
-      console.log("Session callback - Token:", token);
       if (token && session.user) {
         session.user.id = token.id;
         session.user.email = token.email;
@@ -121,20 +88,17 @@ const handler = NextAuth({
           
           if (userData) {
             const transformedData = {
-              ...userData,
               weight: userData.weight ?? undefined,
               height: userData.height ?? undefined,
               age: userData.age ?? undefined,
               gender: userData.gender ?? undefined,
               activityLevel: userData.activityLevel?.toString() ?? undefined
             };
-            
             session.user = {
               ...session.user,
               ...transformedData
             };
           }
-          console.log("Session data:", session);
         } catch (error) {
           console.error("Session error:", error);
         }
@@ -144,7 +108,6 @@ const handler = NextAuth({
   },
   pages: {
     signIn: '/auth/signin',
-    error: '/auth/signin',
   },
 });
 
