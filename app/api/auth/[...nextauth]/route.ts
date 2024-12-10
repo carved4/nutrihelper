@@ -13,6 +13,17 @@ const handler = NextAuth({
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
+    }
+  },
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -85,12 +96,14 @@ const handler = NextAuth({
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.iat = Math.floor(Date.now() / 1000);
+        token.exp = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60);
       }
       return token;
     },
     async session({ session, token }) {
       console.log("Session callback - Token:", token);
-      if (session.user) {
+      if (token && session.user) {
         session.user.id = token.id;
         session.user.email = token.email;
         
