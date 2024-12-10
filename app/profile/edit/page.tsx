@@ -1,9 +1,13 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { User, Mail, Weight, Ruler, Calendar, Users, Activity } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "react-hot-toast";
 
 // Conversion functions
 const kgToLbs = (kg: number) => (kg * 2.20462).toFixed(1);
@@ -19,7 +23,7 @@ const feetInchesToCm = (feet: number, inches: number) => {
   return (totalInches * 2.54).toFixed(1);
 };
 
-export default function EditProfilePage() {
+export default function EditProfile() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -92,8 +96,10 @@ export default function EditProfilePage() {
 
       await update();
       router.push("/profile");
+      toast.success("Profile updated successfully");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
+      toast.error(err instanceof Error ? err.message : "Failed to update profile");
     } finally {
       setSaving(false);
     }
@@ -124,45 +130,41 @@ export default function EditProfilePage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Name</label>
-              <input
+              <Label>Name</Label>
+              <Input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full p-3 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Weight (lbs)</label>
-              <input
+              <Label>Weight (lbs)</Label>
+              <Input
                 type="number"
                 step="0.1"
                 value={formData.weightLbs}
                 onChange={(e) => setFormData({ ...formData, weightLbs: e.target.value })}
-                className="w-full p-3 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Enter weight in pounds"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Height</label>
+              <Label>Height</Label>
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <input
+                  <Input
                     type="number"
                     value={formData.heightFeet}
                     onChange={(e) => setFormData({ ...formData, heightFeet: e.target.value })}
-                    className="w-full p-3 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     placeholder="Feet"
                   />
                 </div>
                 <div className="flex-1">
-                  <input
+                  <Input
                     type="number"
                     value={formData.heightInches}
                     onChange={(e) => setFormData({ ...formData, heightInches: e.target.value })}
-                    className="w-full p-3 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     placeholder="Inches"
                     min="0"
                     max="11"
@@ -172,64 +174,64 @@ export default function EditProfilePage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Age</label>
-              <input
+              <Label>Age</Label>
+              <Input
                 type="number"
                 value={formData.age}
                 onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                className="w-full p-3 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Gender</label>
-              <select
-                value={formData.gender}
-                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                className="w-full p-3 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Select gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
+              <Label>Gender</Label>
+              <Select value={formData.gender} onValueChange={(value) => setFormData({ ...formData, gender: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Activity Level</label>
-              <select
-                value={formData.activityLevel}
-                onChange={(e) => setFormData({ ...formData, activityLevel: e.target.value })}
-                className="w-full p-3 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Select activity level</option>
-                <option value="1">Sedentary</option>
-                <option value="2">Lightly Active</option>
-                <option value="3">Moderately Active</option>
-                <option value="4">Very Active</option>
-                <option value="5">Extra Active</option>
-              </select>
+              <Label>Activity Level</Label>
+              <Select value={formData.activityLevel} onValueChange={(value) => setFormData({ ...formData, activityLevel: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select activity level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Sedentary</SelectItem>
+                  <SelectItem value="2">Lightly Active</SelectItem>
+                  <SelectItem value="3">Moderately Active</SelectItem>
+                  <SelectItem value="4">Very Active</SelectItem>
+                  <SelectItem value="5">Extra Active</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex gap-4 pt-4">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => router.push("/profile")}
-                className="flex-1 p-3 rounded-lg border hover:bg-accent transition-colors"
+                className="flex-1"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={saving}
-                className="flex-1 bg-primary text-primary-foreground p-3 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                className="flex-1"
               >
                 {saving ? (
                   <span className="animate-spin">🔄</span>
                 ) : (
                   "Save Changes"
                 )}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
