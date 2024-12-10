@@ -63,8 +63,8 @@ const handler = NextAuth({
     })
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
+    async jwt({ token, user, trigger }) {
+      if (trigger === "signIn" && user) {
         token.id = user.id;
         token.email = user.email;
       }
@@ -110,6 +110,14 @@ const handler = NextAuth({
   pages: {
     signIn: '/auth/signin',
   },
+  events: {
+    signIn: async (message) => {
+      console.log('Sign in event:', message);
+    },
+    session: async (message) => {
+      console.log('Session event:', message);
+    }
+  }
 });
 
 export { handler as GET, handler as POST }; 
