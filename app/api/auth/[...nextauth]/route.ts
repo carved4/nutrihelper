@@ -6,12 +6,25 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+const isProduction = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
+
 const handler = NextAuth({
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  cookies: {
+    sessionToken: {
+      name: isProduction ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: isProduction
+      }
+    }
   },
   providers: [
     CredentialsProvider({

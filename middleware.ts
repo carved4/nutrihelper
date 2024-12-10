@@ -1,6 +1,16 @@
 import { withAuth } from "next-auth/middleware";
 
 export default withAuth({
+  callbacks: {
+    authorized: ({ token, req }) => {
+      // Debug logging
+      console.log('Auth Check - URL:', req.url);
+      console.log('Auth Check - Token exists:', !!token);
+      console.log('Auth Check - Token:', token);
+      
+      return !!token;
+    }
+  },
   pages: {
     signIn: "/auth/signin",
   }
