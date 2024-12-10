@@ -6,8 +6,6 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const isProduction = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
-
 const handler = NextAuth({
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
