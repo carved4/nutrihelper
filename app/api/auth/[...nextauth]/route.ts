@@ -63,11 +63,15 @@ const handler = NextAuth({
             throw new Error("Invalid credentials");
           }
 
+          if (!user?.email) {
+            throw new Error("Invalid credentials");
+          }
+
           console.log("Auth successful");
           return {
             id: user.id,
-            name: user.name,
-            email: user.email
+            email: user.email,
+            name: user.name
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -77,16 +81,23 @@ const handler = NextAuth({
     })
   ],
   callbacks: {
+    async jwt({ token, user, account }) {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+      }
+      return token;
+    },
     async session({ session, token }) {
+      console.log("Session callback - Token:", token);
       if (session.user) {
+        session.user.id = token.id;
+        session.user.email = token.email;
+        
         try {
-          session.user.id = token.sub!;
-          const user = await prisma.user.findUnique({
-            where: { id: token.sub },
+          const userData = await prisma.user.findUnique({
+            where: { id: token.id },
             select: {
-              id: true,
-              name: true,
-              email: true,
               weight: true,
               height: true,
               age: true,
@@ -95,23 +106,27 @@ const handler = NextAuth({
             }
           });
           
-          if (user) {
+          if (userData) {
+            const transformedData = {
+              ...userData,
+              weight: userData.weight ?? undefined,
+              height: userData.height ?? undefined,
+              age: userData.age ?? undefined,
+              gender: userData.gender ?? undefined,
+              activityLevel: userData.activityLevel?.toString() ?? undefined
+            };
+            
             session.user = {
               ...session.user,
-              ...user
+              ...transformedData
             };
           }
+          console.log("Session data:", session);
         } catch (error) {
           console.error("Session error:", error);
         }
       }
       return session;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
     }
   },
   pages: {
