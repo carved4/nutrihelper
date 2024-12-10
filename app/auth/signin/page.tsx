@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { LogIn, User, Mail, Lock } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 
 export default function AuthPage() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
   const [isSignIn, setIsSignIn] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -27,9 +29,7 @@ export default function AuthPage() {
           redirect: false,
           email,
           password,
-          callbackUrl: window.location.search.includes('callbackUrl') 
-            ? decodeURIComponent(window.location.search.split('callbackUrl=')[1])
-            : '/'
+          callbackUrl
         });
 
         console.log('Sign in result:', result);
@@ -41,7 +41,8 @@ export default function AuthPage() {
         }
 
         if (result?.ok) {
-          router.push(result.url || '/');
+          // Force a hard navigation to ensure session is properly initialized
+          window.location.href = result.url || callbackUrl;
         } else {
           setError('Sign in failed');
         }
