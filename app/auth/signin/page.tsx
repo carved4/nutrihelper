@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
 import { LogIn, User, Mail, Lock } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 
@@ -13,7 +12,6 @@ function SignInForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
