@@ -16,18 +16,6 @@ const handler = NextAuth({
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   debug: true,
-  cookies: {
-    sessionToken: {
-      name: isProduction ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: isProduction,
-        domain: isProduction ? '.vercel.app' : undefined
-      }
-    }
-  },
   providers: [
     CredentialsProvider({
       name: "Credentials",
