@@ -27,7 +27,9 @@ export default function AuthPage() {
           redirect: false,
           email,
           password,
-          callbackUrl: '/'
+          callbackUrl: window.location.search.includes('callbackUrl') 
+            ? decodeURIComponent(window.location.search.split('callbackUrl=')[1])
+            : '/'
         });
 
         console.log('Sign in result:', result);
@@ -39,7 +41,7 @@ export default function AuthPage() {
         }
 
         if (result?.ok) {
-          router.push('/');
+          router.push(result.url || '/');
         } else {
           setError('Sign in failed');
         }
