@@ -15,6 +15,7 @@ const handler = NextAuth({
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  debug: true,
   cookies: {
     sessionToken: {
       name: isProduction ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
@@ -22,7 +23,8 @@ const handler = NextAuth({
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: isProduction
+        secure: isProduction,
+        domain: isProduction ? '.vercel.app' : undefined
       }
     }
   },
