@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -32,17 +33,10 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    await prisma.$transaction(async (tx) => {
-      const newUser = await tx.user.create({
-        data: {
-          name,
-          email,
-        },
-      });
-
-      await tx.$executeRaw`UPDATE "User" SET password = ${hashedPassword} WHERE id = ${newUser.id}`;
-      return newUser;
-    });
+    await prisma.$executeRaw`
+      INSERT INTO "User" (id, name, email, password)
+      VALUES (${crypto.randomUUID()}, ${name}, ${email}, ${hashedPassword})
+    `;
 
     return NextResponse.json(
       { message: "User created successfully" },
