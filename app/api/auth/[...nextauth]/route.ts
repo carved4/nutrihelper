@@ -63,12 +63,10 @@ const handler = NextAuth({
     })
   ],
   callbacks: {
-    async jwt({ token, user, trigger }) {
-      if (trigger === "signIn" || trigger === "signUp") {
-        if (user) {
-          token.id = user.id;
-          token.email = user.email;
-        }
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
       }
       return token;
     },
