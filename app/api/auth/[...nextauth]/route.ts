@@ -17,37 +17,48 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log("Missing credentials");
           throw new Error("Missing credentials");
         }
 
         try {
-          // First, get the user without password
+          console.log("Finding user:", credentials.email);
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email }
+            where: { email: credentials.email },
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
           });
 
           if (!user) {
+            console.log("No user found");
             throw new Error("Invalid credentials");
           }
 
-          // Then, get the password separately
-          const userWithPassword = await prisma.$queryRaw<{ password: string }[]>`
+          const [userPassword] = await prisma.$queryRaw<{ password: string }[]>`
             SELECT password FROM "User" WHERE email = ${credentials.email}
           `;
 
-          if (!userWithPassword[0]?.password) {
+          if (!userPassword?.password) {
+            console.log("No password found");
             throw new Error("Invalid credentials");
           }
 
+          console.log("Comparing passwords");
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
-            userWithPassword[0].password
+            userPassword.password
           );
+          console.log("Password valid:", isPasswordValid);
 
           if (!isPasswordValid) {
+            console.log("Invalid password");
             throw new Error("Invalid credentials");
           }
 
+          console.log("Auth successful");
           return {
             id: user.id,
             name: user.name,
