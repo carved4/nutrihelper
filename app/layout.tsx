@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Header } from "@/components/header";
-import { cn } from "@/lib/utils";
+import Providers from "../components/Providers";
+import { Header } from "../components/header";
+import { ThemeProvider } from "../components/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Health & Nutrition Tracker",
-  description: "Track your health, nutrition, and find recipes",
+  title: "Nutrition Tracker",
+  description: "Track your nutrition and health goals",
 };
 
 export default function RootLayout({
@@ -19,20 +19,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn(
-        "min-h-screen bg-background font-sans antialiased",
-        inter.className
-      )}>
+      <body className={inter.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="relative flex min-h-screen flex-col">
+          <Providers>
             <Header />
-            <main className="flex-1 pt-16">{children}</main>
-          </div>
+            <main className="pt-16">{children}</main>
+          </Providers>
         </ThemeProvider>
       </body>
     </html>

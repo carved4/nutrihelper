@@ -97,32 +97,49 @@ export default function FoodTracker() {
         }
       );
       
+      if (!searchResponse.ok) {
+        const errorText = await searchResponse.text();
+        throw new Error(`Search failed: Status ${searchResponse.status}, Response: ${errorText}`);
+      }
+      
       const searchData = (await searchResponse.json()) as SearchResponse;
       
       // Get detailed nutrition info for each common food
       const commonFoods = await Promise.all(
-        searchData.common.slice(0, 5).map(async (item: SearchResult) => {
-          const detailResponse = await fetch(
-            "https://trackapi.nutritionix.com/v2/natural/nutrients",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "x-app-id": process.env.NEXT_PUBLIC_NUTRITIONIX_APP_ID!,
-                "x-app-key": process.env.NEXT_PUBLIC_NUTRITIONIX_API_KEY!,
-              },
-              body: JSON.stringify({
-                query: item.food_name,
-              }),
+        (searchData.common || []).slice(0, 5).map(async (item: SearchResult) => {
+          try {
+            const detailResponse = await fetch(
+              "https://trackapi.nutritionix.com/v2/natural/nutrients",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-app-id": process.env.NEXT_PUBLIC_NUTRITIONIX_APP_ID!,
+                  "x-app-key": process.env.NEXT_PUBLIC_NUTRITIONIX_API_KEY!,
+                },
+                body: JSON.stringify({
+                  query: item.food_name,
+                }),
+              }
+            );
+
+            if (!detailResponse.ok) {
+              console.error(`Failed to get details for ${item.food_name}: ${detailResponse.statusText}`);
+              return null;
             }
-          );
-          const detailData = (await detailResponse.json()) as NutritionixResponse;
-          return detailData.foods?.[0];
+
+            const detailData = (await detailResponse.json()) as NutritionixResponse;
+            return detailData.foods?.[0] || null;
+        
+          } catch (error) {
+            console.error(`Error fetching details for ${item.food_name}:`, error);
+            return null;
+          }
         })
       );
 
       // Get branded foods info
-      const brandedFoods = searchData.branded.slice(0, 5).map((item: BrandedFood) => ({
+      const brandedFoods = (searchData.branded || []).slice(0, 5).map((item: BrandedFood) => ({
         food_name: item.food_name,
         serving_qty: item.serving_qty,
         serving_unit: item.serving_unit,
@@ -131,15 +148,22 @@ export default function FoodTracker() {
         nf_total_carbohydrate: item.nf_total_carbohydrate || 0,
         nf_total_fat: item.nf_total_fat || 0,
         brand_name: item.brand_name,
-        mealType: 'breakfast',
+        mealType: selectedMealType,
         timestamp: new Date().toISOString(),
       }));
 
       // Combine and filter out null results
       const combinedResults = [...commonFoods, ...brandedFoods]
-        .filter(Boolean)
-        .map(food => ({
-          ...food,
+        .filter((food): food is NonNullable<typeof food> => Boolean(food))
+        .map((food): FoodItem => ({
+          food_name: food.food_name || '',
+          serving_qty: food.serving_qty || 0,
+          serving_unit: food.serving_unit || 'serving',
+          nf_calories: food.nf_calories || 0,
+          nf_protein: food.nf_protein || 0,
+          nf_total_carbohydrate: food.nf_total_carbohydrate || 0,
+          nf_total_fat: food.nf_total_fat || 0,
+          brand_name: 'brand_name' in food ? (food.brand_name as string) : undefined,
           mealType: selectedMealType,
           timestamp: new Date().toISOString()
         }));

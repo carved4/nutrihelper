@@ -224,8 +224,14 @@ export default function RecipeFinder() {
                       src={recipe.image}
                       alt={recipe.title}
                       fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      priority={true}
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                       className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                      style={{ objectFit: 'cover' }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/recipe-placeholder.jpg'; // Add a placeholder image
+                      }}
                     />
                     {recipe.healthScore >= 80 && (
                       <div className="absolute top-2 left-2 bg-green-500/90 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
@@ -291,13 +297,19 @@ export default function RecipeFinder() {
             <div className="min-h-full flex items-center justify-center p-4">
               <div className="w-full max-w-4xl bg-background rounded-lg border shadow-lg">
                 <div className="relative">
-                  <div className="aspect-video sm:aspect-[2/1]">
+                  <div className="aspect-[2/1] relative">
                     <Image
                       src={selectedRecipe.image}
                       alt={selectedRecipe.title}
                       fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
+                      priority={true}
+                      sizes="(max-width: 768px) 100vw, 800px"
                       className="object-cover w-full h-full rounded-t-lg"
+                      style={{ objectFit: 'cover' }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/recipe-placeholder.jpg';
+                      }}
                     />
                     <button
                       onClick={() => setSelectedRecipe(null)}

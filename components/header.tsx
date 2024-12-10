@@ -1,80 +1,104 @@
 "use client";
 
-import { ThemeToggle } from "./theme-toggle";
-import { Heart, Menu, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { 
+  Calculator, 
+  Apple, 
+  ChefHat, 
+  PieChart, 
+  LogIn, 
+  LogOut, 
+  User 
+} from "lucide-react";
+import { ThemeToggle } from "./theme-toggle";
 
-const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/bmi-calculator", label: "BMI Calculator" },
-  { href: "/food-tracker", label: "Food Tracker" },
-  { href: "/recipe-finder", label: "Recipes" },
-  { href: "/macro-tracker", label: "Macros" },
+const NAV_ITEMS = [
+  {
+    href: "/bmi-calculator",
+    icon: Calculator,
+    title: "BMI Calculator",
+    color: "bg-blue-500/10 text-blue-500",
+  },
+  {
+    href: "/food-tracker",
+    icon: Apple,
+    title: "Food Tracker",
+    color: "bg-green-500/10 text-green-500",
+  },
+  {
+    href: "/recipe-finder",
+    icon: ChefHat,
+    title: "Recipe Finder",
+    color: "bg-orange-500/10 text-orange-500",
+  },
+  {
+    href: "/macro-tracker",
+    icon: PieChart,
+    title: "Macro Tracker",
+    color: "bg-purple-500/10 text-purple-500",
+  },
 ];
 
 export function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { data: session } = useSession();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-2 transition-colors">
-            <Heart className="h-6 w-6 text-primary" />
-            <span className="font-bold text-lg hidden sm:inline-block">
-              Health Tracker
-            </span>
-          </Link>
-        </div>
+    <header className="fixed top-0 left-0 w-full bg-background/80 backdrop-blur-md z-50 border-b">
+      <div className="container max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+        <Link 
+          href="/" 
+          className="text-2xl font-bold flex items-center gap-2"
+        >
+          Nutrition Tracker
+        </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-sm font-medium transition-colors hover:text-primary"
+        <nav className="flex items-center gap-4">
+          {NAV_ITEMS.map((item) => (
+            <Link 
+              key={item.href} 
+              href={item.href} 
+              className="group flex items-center gap-2 hover:bg-accent p-2 rounded-lg transition-colors"
             >
-              {item.label}
+              <item.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+              <span className="hidden md:block text-sm">{item.title}</span>
             </Link>
           ))}
-          <ThemeToggle />
-        </nav>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden p-2 hover:bg-accent rounded-md"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          {isMenuOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
-        </button>
-      </div>
-
-      {/* Mobile Navigation */}
-      {isMenuOpen && (
-        <div className="md:hidden border-t bg-background">
-          <nav className="container py-4 flex flex-col space-y-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-sm font-medium transition-colors hover:text-primary px-2 py-1 rounded-md hover:bg-accent"
-                onClick={() => setIsMenuOpen(false)}
+          {session ? (
+            <div className="flex items-center gap-4">
+              <Link 
+                href="/profile" 
+                className="flex items-center gap-2 hover:bg-accent p-2 rounded-lg transition-colors"
               >
-                {item.label}
+                <User className="h-5 w-5 text-muted-foreground" />
+                <span className="hidden md:block text-sm">
+                  {session.user?.name || session.user?.email}
+                </span>
               </Link>
-            ))}
-            <div className="px-2">
+              <button 
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="flex items-center gap-2 hover:bg-destructive/10 text-destructive p-2 rounded-lg transition-colors"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="hidden md:block text-sm">Sign Out</span>
+              </button>
               <ThemeToggle />
             </div>
-          </nav>
-        </div>
-      )}
+          ) : (
+            <div className="flex items-center gap-4">
+              <Link 
+                href="/auth/signin" 
+                className="flex items-center gap-2 hover:bg-accent p-2 rounded-lg transition-colors"
+              >
+                <LogIn className="h-5 w-5 text-muted-foreground" />
+                <span className="hidden md:block text-sm">Sign In</span>
+              </Link>
+              <ThemeToggle />
+            </div>
+          )}
+        </nav>
+      </div>
     </header>
   );
 } 
