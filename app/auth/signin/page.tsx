@@ -26,8 +26,11 @@ export default function AuthPage() {
         const result = await signIn('credentials', {
           redirect: false,
           email,
-          password
+          password,
+          callbackUrl: '/'
         });
+
+        console.log('Sign in result:', result);
 
         if (result?.error) {
           setError('Invalid email or password');
@@ -35,7 +38,11 @@ export default function AuthPage() {
           return;
         }
 
-        router.push('/');
+        if (result?.ok) {
+          router.push('/');
+        } else {
+          setError('Sign in failed');
+        }
       } else {
         // Sign Up
         if (password !== confirmPassword) {
