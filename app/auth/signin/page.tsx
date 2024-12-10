@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import { LogIn, User, Mail, Lock } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 
-export default function AuthPage() {
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/';
+function SignInForm() {
   const [isSignIn, setIsSignIn] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -24,6 +22,10 @@ export default function AuthPage() {
 
     try {
       if (isSignIn) {
+        // Get callback URL from window location
+        const params = new URLSearchParams(window.location.search);
+        const callbackUrl = params.get('callbackUrl') || '/';
+
         // Sign In
         const result = await signIn('credentials', {
           redirect: false,
@@ -47,7 +49,7 @@ export default function AuthPage() {
           setError('Sign in failed');
         }
       } else {
-        // Sign Up
+        // Sign Up logic remains the same
         if (password !== confirmPassword) {
           setError('Passwords do not match');
           setLoading(false);
@@ -76,7 +78,7 @@ export default function AuthPage() {
         });
 
         if (signInResult?.ok) {
-          router.push('/');
+          window.location.href = '/';
         } else {
           setError('Signup successful, but login failed');
         }
@@ -199,5 +201,13 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignInForm />
+    </Suspense>
   );
 } 
